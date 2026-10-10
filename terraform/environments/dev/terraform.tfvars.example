@@ -1,0 +1,19 @@
+# ==============================================================================
+# Development Environment Variable Values (Example)
+# ==============================================================================
+
+aws_region        = "ap-south-1"
+environment       = "dev"
+cluster_name      = "wild-tour-eks"
+cluster_version   = "1.30"
+
+# Networking
+vpc_cidr           = "10.0.0.0/16"
+availability_zones = ["ap-south-1a", "ap-south-1b"]
+
+# Worker Node Specifications
+instance_types    = ["t3.medium"]
+capacity_type     = "SPOT"          # SPOT for ~70% cost reduction; ON_DEMAND for production
+node_desired_size = 2
+node_min_size     = 2
+node_max_size     = 4
