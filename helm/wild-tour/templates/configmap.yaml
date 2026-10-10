@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "wild-tour.fullname" . }}-config
+  labels:
+    {{- include "wild-tour.labels" . | nindent 4 }}
+data:
+  DB_URL: {{ .Values.database.url | quote }}

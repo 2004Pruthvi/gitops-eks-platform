@@ -1,0 +1,85 @@
+# ==============================================================================
+# Wild Tour Application — Helm Base Values
+# ==============================================================================
+
+replicaCount: 2
+
+image:
+  repository: 123456789012.dkr.ecr.ap-south-1.amazonaws.com/wild-tour
+  pullPolicy: IfNotPresent
+  # Image tag is overridden by CI/CD GitOps workflow with Git commit SHA
+  tag: "initial"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: "wild-tour"
+
+podAnnotations: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 999
+  runAsGroup: 999
+  fsGroup: 999
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+ingress:
+  enabled: false
+  className: "alb"
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+  hosts:
+    - host: wild-tour.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+# Rolling Update Strategy
+rollingUpdate:
+  maxSurge: 1
+  maxUnavailable: 0
+
+# Health Checks
+probes:
+  readiness:
+    path: /Wild_Tour/Home.jsp
+    initialDelaySeconds: 45
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+  liveness:
+    path: /Wild_Tour/Home.jsp
+    initialDelaySeconds: 60
+    periodSeconds: 20
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+# Database Configuration (Injected from RDS)
+database:
+  url: "jdbc:mysql://database-wild-tour.c7x8y9z0a1b2.ap-south-1.rds.amazonaws.com:3306/wildlife"
+  secretName: "wild-tour-db-secret"
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

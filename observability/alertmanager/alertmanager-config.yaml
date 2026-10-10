@@ -1,0 +1,56 @@
+# ==============================================================================
+# Alertmanager Configuration — Routing & Notification Channels
+# ==============================================================================
+# In production, notification endpoints (Slack Webhooks, PagerDuty keys, SMTP)
+# are injected via Kubernetes Secrets or Helm values, NEVER committed in plaintext.
+
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: wild-tour-alert-routing
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  route:
+    groupBy: ['alertname', 'namespace', 'tier']
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 4h
+    receiver: 'slack-notifications'
+    routes:
+      - matchers:
+          - name: severity
+            value: critical
+        receiver: 'critical-alerts'
+        continue: true
+      - matchers:
+          - name: tier
+            value: application
+        receiver: 'slack-notifications'
+
+  receivers:
+    - name: 'slack-notifications'
+      slackConfigs:
+        - channel: '#platform-alerts'
+          sendResolved: true
+          apiURL:
+            name: alertmanager-secret
+            key: SLACK_WEBHOOK_URL
+          title: '{{ template "slack.default.title" . }}'
+          text: >-
+            *Alert:* {{ .CommonAnnotations.summary }}
+            *Description:* {{ .CommonAnnotations.description }}
+            *Severity:* `{{ .CommonLabels.severity }}`
+            *Namespace:* `{{ .CommonLabels.namespace }}`
+
+    - name: 'critical-alerts'
+      emailConfigs:
+        - to: 'sre-oncall@wildtour.internal'
+          from: 'alertmanager@wildtour.internal'
+          smarthost: 'email-smtp.ap-south-1.amazonaws.com:587'
+          sendResolved: true
+          authUsername: 'SMTP_USERNAME_PLACEHOLDER'
+          authPassword:
+            name: alertmanager-secret
+            key: SMTP_PASSWORD

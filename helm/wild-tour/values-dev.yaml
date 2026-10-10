@@ -1,0 +1,20 @@
+# ==============================================================================
+# Development Environment Override Values
+# ==============================================================================
+# In a GitOps workflow, the CI pipeline updates 'image.tag' with the short Git SHA.
+
+replicaCount: 2
+
+image:
+  repository: 123456789012.dkr.ecr.ap-south-1.amazonaws.com/wild-tour
+  pullPolicy: Always
+  tag: "fbf279d"
+
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 8080
+
+database:
+  url: "jdbc:mysql://database-wild-tour.c7x8y9z0a1b2.ap-south-1.rds.amazonaws.com:3306/wildlife"
+  secretName: "wild-tour-db-secret"

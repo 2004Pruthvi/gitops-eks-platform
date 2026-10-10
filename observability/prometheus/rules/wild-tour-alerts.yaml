@@ -1,0 +1,71 @@
+# ==============================================================================
+# PrometheusRule — Alerting Rules for EKS Cluster & Wild Tour Workloads
+# ==============================================================================
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: wild-tour-alerts
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+    role: alert-rules
+spec:
+  groups:
+    - name: wild-tour.workload.rules
+      rules:
+        # Alert 1: Pod CrashLoopBackOff or Frequent Restarts
+        - alert: WildTourPodFrequentlyRestarting
+          expr: increase(kube_pod_container_status_restarts_total{namespace="wild-tour"}[10m]) > 2
+          for: 2m
+          labels:
+            severity: critical
+            tier: application
+          annotations:
+            summary: "Wild Tour pod {{ $labels.pod }} is restarting frequently"
+            description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has restarted {{ $value }} times in the last 10 minutes. Check logs for application exceptions or database connectivity errors."
+
+        # Alert 2: Deployment Replicas Unavailable
+        - alert: WildTourDeploymentReplicasUnavailable
+          expr: (kube_deployment_status_replicas_available{namespace="wild-tour",deployment="wild-tour"} < kube_deployment_spec_replicas{namespace="wild-tour",deployment="wild-tour"})
+          for: 3m
+          labels:
+            severity: warning
+            tier: application
+          annotations:
+            summary: "Wild Tour deployment replicas unavailable"
+            description: "Deployment {{ $labels.deployment }} has fewer available replicas than desired (Available: {{ $value }}). Verify pod events, scheduling, or probe failures."
+
+        # Alert 3: Container Memory Utilization Exceeding Threshold
+        - alert: WildTourHighMemoryUtilization
+          expr: (sum(container_memory_working_set_bytes{namespace="wild-tour",container="wild-tour"}) by (pod) / sum(kube_pod_container_resource_limits{namespace="wild-tour",container="wild-tour",resource="memory"}) by (pod)) * 100 > 85
+          for: 5m
+          labels:
+            severity: warning
+            tier: application
+          annotations:
+            summary: "Pod {{ $labels.pod }} memory usage > 85%"
+            description: "Pod {{ $labels.pod }} memory usage is at {{ $value | printf \"%.2f\" }}% of its limit for over 5 minutes. High risk of OOMKilled."
+
+        # Alert 4: Container CPU Utilization Exceeding Threshold
+        - alert: WildTourHighCPUUtilization
+          expr: (sum(rate(container_cpu_usage_seconds_total{namespace="wild-tour",container="wild-tour"}[5m])) by (pod) / sum(kube_pod_container_resource_limits{namespace="wild-tour",container="wild-tour",resource="cpu"}) by (pod)) * 100 > 85
+          for: 5m
+          labels:
+            severity: warning
+            tier: application
+          annotations:
+            summary: "Pod {{ $labels.pod }} CPU usage > 85%"
+            description: "Pod {{ $labels.pod }} CPU usage is at {{ $value | printf \"%.2f\" }}% of its limit for over 5 minutes."
+
+    - name: wild-tour.cluster.rules
+      rules:
+        # Alert 5: Worker Node Not Ready
+        - alert: KubeNodeNotReady
+          expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+          for: 5m
+          labels:
+            severity: critical
+            tier: infrastructure
+          annotations:
+            summary: "Kubernetes Node {{ $labels.node }} is NotReady"
+            description: "Node {{ $labels.node }} in EKS cluster has been in NotReady state for more than 5 minutes."

@@ -1,0 +1,28 @@
+# ==============================================================================
+# Argo CD App-of-Apps Pattern — Root Application
+# ==============================================================================
+# In enterprise GitOps, a single "root" Application manages all child Applications.
+# Applying this file deploys all environments and services declaratively.
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root-platform-apps
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/2004Pruthvi/gitops-eks-platform.git
+    targetRevision: main
+    path: gitops/applications
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
