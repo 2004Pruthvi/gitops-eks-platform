@@ -1,10 +1,10 @@
-# AWS Infrastructure Cost Estimation & Optimization Guide (ap-south-1)
+# AWS Infrastructure Cost Estimation and Optimization Guide (ap-south-1)
 
 ---
 
-## 💰 Estimated Monthly Cost Breakdown
+## 1. Estimated Monthly Cost Breakdown
 
-The following estimates represent running this platform in **AWS Asia Pacific (Mumbai) `ap-south-1`**:
+The following estimates represent running this platform in AWS Asia Pacific (Mumbai) `ap-south-1`:
 
 | Component | AWS Resource | Monthly On-Demand Cost | Cost-Optimized Dev Cost | Notes / Trade-Offs |
 | :--- | :--- | :--- | :--- | :--- |
@@ -18,15 +18,15 @@ The following estimates represent running this platform in **AWS Asia Pacific (M
 
 ---
 
-## ⚡ Key Platform Cost Optimization Strategies
+## 2. Key Platform Cost Optimization Strategies
 
-1. **Spot Instances for Non-Critical Worker Nodes**:
+1. **Spot Instances for Worker Nodes**:
    * Configured in Terraform via `capacity_type = "SPOT"`.
    * Saves up to 70-80% on compute without altering Kubernetes workload architecture.
-2. **Single NAT Gateway for Development**:
+2. **Single NAT Gateway for Non-Production**:
    * In production, high availability requires 1 NAT Gateway per Availability Zone.
-   * For development/portfolio, `enable_single_nat_gateway = true` cuts NAT costs in half.
-3. **EKS Cluster Auto-Pausing / Scaling**:
-   * Scale worker node groups to `desired_size = 0` when not actively conducting testing.
+   * For non-production environments, `enable_single_nat_gateway = true` cuts NAT costs in half.
+3. **EKS Worker Node Auto-Scaling**:
+   * Scale worker node groups to `desired_size = 0` during maintenance windows or idle periods.
 4. **Automated Teardown**:
-   * Execute `scripts/cleanup-platform.sh` when completing evaluation sessions to eliminate idle compute charges.
+   * Execute `scripts/cleanup-platform.sh` when tearing down test environments to eliminate idle charges.

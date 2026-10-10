@@ -1,8 +1,8 @@
-# Architecture & System Design Documentation
+# Architecture and System Design Documentation
 
 ---
 
-## 🏛️ Executive Summary
+## 1. Executive Summary
 
 The **GitOps EKS Platform** is an enterprise-grade cloud-native infrastructure and application delivery platform built on Amazon Web Services (AWS) using Amazon Elastic Kubernetes Service (EKS).
 
@@ -10,7 +10,7 @@ The platform enforces strict separation of concerns across infrastructure manage
 
 ---
 
-## 🔄 End-to-End Delivery Flow
+## 2. End-to-End Delivery Flow
 
 ```
 1. Developer pushes code to GitHub ('main' branch)
@@ -50,7 +50,7 @@ The platform enforces strict separation of concerns across infrastructure manage
 
 ---
 
-## 🛡️ Separation of Responsibilities
+## 3. Separation of Responsibilities
 
 | Component | Responsibility | What It Must NEVER Do |
 | :--- | :--- | :--- |
@@ -62,7 +62,7 @@ The platform enforces strict separation of concerns across infrastructure manage
 
 ---
 
-## 🌐 Network & Security Architecture
+## 4. Network and Security Architecture
 
 1. **VPC Topology (ap-south-1)**:
    * **Public Subnets**: Ingress load balancers and NAT Gateways.

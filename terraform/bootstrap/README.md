@@ -1,10 +1,10 @@
 # Terraform Remote State Bootstrap Guide
 
-In enterprise infrastructure engineering, Terraform state files (`terraform.tfstate`) must **never** be stored locally or committed to Git. They must be stored in a centralized, encrypted, and versioned remote backend with distributed state locking.
+In enterprise infrastructure engineering, Terraform state files (`terraform.tfstate`) must never be stored locally or committed to Git. They must be stored in a centralized, encrypted, and versioned remote backend with distributed state locking.
 
 ---
 
-## 🏛️ Architecture of the Backend
+## 1. Architecture of the Backend
 
 1. **Amazon S3**:
    * Stores the `terraform.tfstate` file remotely.
@@ -13,11 +13,11 @@ In enterprise infrastructure engineering, Terraform state files (`terraform.tfst
    * **Public Access Blocked**: Prevents accidental exposure of infrastructure metadata.
 2. **Amazon DynamoDB**:
    * Uses a primary hash key named `LockID` (string).
-   * Provides distributed locking: when an engineer or CI runner runs `terraform apply`, Terraform writes a lock record to DynamoDB, preventing concurrent executions from corrupting the state.
+   * Provides distributed locking: when Terraform executes, it writes a lock record to DynamoDB, preventing concurrent executions from corrupting state.
 
 ---
 
-## 🚀 Bootstrap Commands (AWS CLI)
+## 2. Bootstrap Commands (AWS CLI)
 
 To provision the remote state storage prior to running Terraform:
 
@@ -72,6 +72,6 @@ aws dynamodb create-table \
 
 ---
 
-## 🛡️ Security Best Practices
+## 3. Security Best Practices
 * **Least-Privilege IAM**: Only Terraform execution roles should possess `s3:GetObject`, `s3:PutObject`, and `dynamodb:PutItem`/`dynamodb:DeleteItem` on these resources.
 * **Deletion Protection**: Enable S3 MFA Delete for production backends to prevent accidental destruction.

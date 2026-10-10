@@ -1,4 +1,4 @@
-# Full GitOps EKS Platform — Flagship Platform Engineering Project
+# Full GitOps EKS Platform
 
 [![AWS](https://img.shields.io/badge/AWS-Amazon%20EKS%20%7C%20VPC%20%7C%20ECR%20%7C%20RDS-232F3E?logo=amazon-aws&logoColor=white)](https://aws.amazon.com/)
 [![Terraform](https://img.shields.io/badge/Terraform-1.5%2B%20Modular%20IaC-7B42BC?logo=terraform&logoColor=white)](https://www.terraform.io/)
@@ -11,30 +11,30 @@
 
 ---
 
-## 🏛️ Executive Overview
+## 1. System Overview
 
 The **Full GitOps EKS Platform** is an enterprise-grade cloud-native infrastructure and continuous delivery platform built on Amazon Web Services (AWS) using Amazon Elastic Kubernetes Service (EKS).
 
-This platform demonstrates the implementation of a modern Platform Engineering architecture:
-* **Infrastructure as Code (IaC)**: Modular Terraform with versioned S3 remote state and DynamoDB distributed locking.
-* **Continuous Integration (CI)**: Declarative Jenkins pipeline enforcing automated unit testing, container hardening, Trivy CVE vulnerability gates, and immutable Git SHA image tagging.
-* **Continuous Delivery (CD)**: Declarative GitOps delivery via **Argo CD** and **Helm**, enforcing automated self-healing and drift correction.
-* **Full-Stack Observability**: Production monitoring stack via `kube-prometheus-stack` with Grafana operational dashboards and Alertmanager routing for pod crashes, deployment unavailability, and resource pressure.
-* **SRE Reliability & Zero-Downtime**: Non-root container security context (UID 999), parameterized rolling updates (`maxSurge=1, maxUnavailable=0`), and verified GitOps rollback procedures.
+Key architectural pillars:
+* **Infrastructure as Code (IaC)**: Modular Terraform configurations with versioned S3 remote state and DynamoDB distributed state locking.
+* **Continuous Integration (CI)**: Declarative Jenkins pipeline enforcing automated unit testing, container hardening, Trivy vulnerability gates, and immutable Git SHA image tagging.
+* **Continuous Delivery (CD)**: Declarative GitOps delivery via **Argo CD** and **Helm**, enforcing automated synchronization and self-healing.
+* **Full-Stack Observability**: Monitoring stack via `kube-prometheus-stack` with Grafana operational dashboards and Alertmanager routing for pod crashes, deployment unavailability, and resource pressure.
+* **Reliability and Zero-Downtime**: Non-root container security context (UID 999), parameterized rolling updates (`maxSurge=1, maxUnavailable=0`), and verified GitOps rollback procedures.
 
 ---
 
-## 📐 Architecture Diagram
+## 2. Architecture Diagram
 
 ```mermaid
 flowchart TD
-    subgraph Developer_Workflow ["Developer & Source Control"]
+    subgraph Developer_Workflow ["Developer and Source Control"]
         Dev["Developer"] -->|1. git push| AppRepo["GitHub Repository\ngitops-eks-platform"]
     end
 
     subgraph CI_Pipeline ["Continuous Integration (Jenkins CI)"]
         AppRepo -->|2. Webhook Trigger| Jenkins["Jenkins Declarative Pipeline"]
-        Jenkins -->|3. Compile & Test| Maven["Maven (Java 17 / JUnit)"]
+        Jenkins -->|3. Compile and Test| Maven["Maven (Java 17 / JUnit)"]
         Maven -->|4. Containerize| DockerBuild["Docker Build (UID 999 Non-Root)"]
         DockerBuild -->|5. Vulnerability Scan| Trivy["Trivy Security Scanner\n(Severity: HIGH, CRITICAL)"]
         Trivy -->|6. Push Image| ECR[("Amazon ECR\nwild-tour:fbf279d-42")]
@@ -52,7 +52,7 @@ flowchart TD
             subgraph Private_Compute ["Private Subnets (Worker Nodes)"]
                 subgraph EKS_Cluster ["Amazon EKS Cluster: wild-tour-eks (v1.30)"]
                     ArgoCD["Argo CD Controller"]
-                    Prometheus["Prometheus & Alertmanager"]
+                    Prometheus["Prometheus and Alertmanager"]
                     Grafana["Grafana Dashboards"]
                     
                     subgraph App_Namespace ["Namespace: wild-tour"]
@@ -71,11 +71,11 @@ flowchart TD
 
     subgraph GitOps_Flow ["GitOps Synchronization"]
         GitOpsState -->|8. Continuous Pull| ArgoCD
-        ArgoCD -->|9. Render Helm & Reconcile| App_Namespace
+        ArgoCD -->|9. Render Helm and Reconcile| App_Namespace
         ECR -.->|10. Pull Verified Image| App_Namespace
     end
 
-    subgraph Monitoring_Flow ["Observability & Alerts"]
+    subgraph Monitoring_Flow ["Observability and Alerts"]
         Prometheus -.->|Scrapes Metrics| App_Namespace
         Prometheus --> Grafana
         Prometheus -->|Fires on CrashLoop/Down| Alertmanager["Alertmanager"]
@@ -91,7 +91,7 @@ flowchart TD
 
 ---
 
-## 📁 Repository Structure
+## 3. Repository Structure
 
 ```text
 gitops-eks-platform/
@@ -129,16 +129,15 @@ gitops-eks-platform/
 │   ├── verify-platform.sh       # Full cluster and workload health verification
 │   ├── simulate-failure-and-rollback.sh # SRE failure injection & GitOps rollback runbook
 │   └── cleanup-platform.sh      # Safe cloud teardown & idle cost verification
-└── docs/                        # Engineering documentation & interview runbooks
+└── docs/                        # Engineering documentation & operational runbooks
     ├── architecture.md          # End-to-end design & separation of concerns
     ├── rollback-runbook.md      # GitOps rollback vs kubectl rollout undo
-    ├── cost-breakdown.md        # AWS ap-south-1 cost estimation & optimizations
-    └── interview-guide.md       # Technical interview questions and answers
+    └── cost-breakdown.md        # AWS ap-south-1 cost estimation & optimizations
 ```
 
 ---
 
-## ⚡ Separation of Engineering Responsibilities
+## 4. Separation of Engineering Responsibilities
 
 | Layer | Technology | Primary Role | What It Must NEVER Do |
 | :--- | :--- | :--- | :--- |
@@ -150,7 +149,7 @@ gitops-eks-platform/
 
 ---
 
-## 📊 Measurable Engineering Outcomes (DORA & Reliability Metrics)
+## 5. Measurable Engineering Outcomes (DORA and Reliability Metrics)
 
 | Metric | Definition | Target / Observed | Test Conditions |
 | :--- | :--- | :--- | :--- |
@@ -163,7 +162,7 @@ gitops-eks-platform/
 
 ---
 
-## 🛡️ SRE Failure Scenarios & Verified Recovery
+## 6. SRE Failure Scenarios and Verified Recovery
 
 ```
 Scenario 1: Failing Unit Test in Maven
@@ -186,18 +185,17 @@ Scenario 5: Production Release Rollback
 
 ---
 
-## 💰 Cost Optimization Summary (AWS ap-south-1)
+## 7. Cost Optimization Architecture (AWS ap-south-1)
 
 * **Spot Instance Compute**: Managed node groups configured with `capacity_type = "SPOT"`, reducing EC2 worker node costs by ~70%.
-* **Single NAT Gateway for Dev**: Single NAT Gateway configured in `terraform/modules/vpc/` saves ~$32.40/month compared to multi-AZ NAT.
+* **Single NAT Gateway for Non-Production**: Single NAT Gateway configured in `terraform/modules/vpc/` saves ~$32.40/month compared to multi-AZ NAT.
 * **Non-Root Tomcat Security**: Container runs under dedicated system user `tomcat` (UID 999), satisfying enterprise container security compliance.
 
 ---
 
-## 🎓 Technical Interview Readiness
+## 8. Operational Runbooks
 
-For technical interview preparation, detailed questions and answers covering every architectural decision are documented in [docs/interview-guide.md](docs/interview-guide.md):
-* *Why GitOps pull model over CI push model?*
-* *Why does `kubectl rollout undo` fail in a GitOps environment?*
-* *How do Tomcat readiness probes prevent 502 Bad Gateway during rolling deployments?*
-* *How are secrets decoupled without hardcoding credentials in Git?*
+* [Architecture Documentation](docs/architecture.md)
+* [GitOps Rollback and Remediation Runbook](docs/rollback-runbook.md)
+* [AWS Cost Estimation and Optimization](docs/cost-breakdown.md)
+* [Remote State Bootstrap Guide](terraform/bootstrap/README.md)
